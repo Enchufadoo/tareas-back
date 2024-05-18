@@ -1,0 +1,29 @@
+version: '3'
+
+tasks:
+  make_request:
+    cmds:
+      - vendor/bin/sail artisan make:request {{.CLI_ARGS}}
+  make_controller:
+    cmds:
+      - vendor/bin/sail artisan make:controller {{.CLI_ARGS}}
+  make_migration:
+    cmds:
+      - vendor/bin/sail artisan make:migration {{.CLI_ARGS}}
+  make_factory:
+    cmds:
+      - vendor/bin/sail artisan make:factory {{.CLI_ARGS}}
+  make_model:
+    cmds:
+      - vendor/bin/sail artisan make:model {{.CLI_ARGS}}
+  revert_migration:
+    cmds:
+      - vendor/bin/sail artisan migrate:rollback --step=1
+  php-ide-helper:
+    cmds:
+      - vendor/bin/sail artisan ide-helper:generate
+      - vendor/bin/sail artisan ide-helper:models --nowrite
+      - vendor/bin/sail artisan ide-helper:meta
+  migrate:
+    cmds:
+      - vendor/bin/sail artisan migrate
