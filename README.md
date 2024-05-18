@@ -57,7 +57,7 @@ Tested with:
    ```sh
    vendor/bin/sail artisan migrate
    ```
-5. Run the database migrations
+5. Seed the database
    ```sh
    vendor/bin/sail artisan db:seed
    ```
