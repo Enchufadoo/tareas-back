@@ -41,13 +41,15 @@ Tested with:
    cp .env.example .env
    ```
    Complete the following variables
-   DB_PASSWORD -> MySQL user password
-   WWWGROUP -> Group for your current user
-   WWWUSER -> ID for your current user
+   ```
+   DB_PASSWORD -> Any MySQL user password
+   WWWGROUP -> Group for your current user, usually 1001
+   WWWUSER -> ID for your current user, usually 10001
    APP_PORT -> PORT the application will run
+   ```
 3. Start the docker containers
 
-```sh
+   ```sh
    docker compose up
    ```
 
