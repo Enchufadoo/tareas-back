@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/task/progress/{task}', [TaskController::class, 'addProgress']);
         Route::delete('/task/progress/{task}', [TaskController::class, 'removeProgress']);
         Route::get('/task', [TaskController::class, 'listTasks']);
+        Route::get('/task/week', [TaskController::class, 'weeksProgress']);
         Route::post('/task', [TaskController::class, 'store']);
         Route::get('/task/store/data', [TaskController::class, 'dataStoreTask']);
         Route::get('/task/{task}', [TaskController::class, 'show']);

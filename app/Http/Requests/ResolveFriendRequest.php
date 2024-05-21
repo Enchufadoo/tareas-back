@@ -16,7 +16,7 @@ class ResolveFriendRequest extends FormRequest
                 'required',
                 Rule::in([FriendRequest::STATUS_ACCEPTED, FriendRequest::STATUS_REJECTED]),
             ],
-            'request_id' =>
+            
         ];
     }
 }

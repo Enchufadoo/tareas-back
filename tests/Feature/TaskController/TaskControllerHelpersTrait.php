@@ -74,4 +74,11 @@ trait TaskControllerHelpersTrait
         $response->assertStatus($expectedStatus);
         return $this->convertToJson($response);
     }
+
+    public function showWeeksProgress(int $expectedStatus, array $data)
+    {
+        $response = $this->json('GET', '/api/task/week', $data);
+        $response->assertStatus($expectedStatus);
+        return $this->convertToJson($response);
+    }
 }

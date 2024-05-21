@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\TaskProgress;
 use App\Models\TaskUser;
 use App\Models\UserFriend;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -179,6 +180,56 @@ class TaskController extends Controller
     {
         $task->delete();
         return $this->json([], 'Task deleted');
+    }
+
+    /**
+     * Get the progress of tasks for the current week.
+     */
+    public function weeksProgress()
+    {
+        $initializeWeek = function (): array {
+            return array_map(function () {
+                return false;
+            }, range(0, 6));
+        };
+
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::SUNDAY);
+        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SATURDAY);
+
+        $progress = TaskProgress::with(['task'])
+            ->select(['*', \DB::raw('DAYOFWEEK(created_at) as day_of_week')])
+            ->currentUser()
+            ->whereBetween('created_at', [$startOfWeek, $endOfWeek])->get();
+
+        $processedTasks = [];
+        $listFinishedTasks = [];
+
+        foreach ($progress as $taskProgress) {
+            if ($taskProgress['task']) {
+                $taskId = $taskProgress['task']->id;
+
+                if ($taskProgress['task']['finished']) {
+                    $listFinishedTasks[$taskId] = true;
+                }
+
+                if (!isset($processedTasks[$taskId])) {
+                    $processedTasks[$taskId] = $initializeWeek();
+                }
+
+                $dayOfWeek = $taskProgress['day_of_week'];
+                $processedTasks[$taskId][$dayOfWeek] = true;
+            }
+        }
+
+        $tasksToShow = Task::currentUser()->unfinished()->orWhereIn('id', array_keys($listFinishedTasks))->get();
+
+        foreach ($tasksToShow as $task) {
+            if (!isset($processedTasks[$task->id])) {
+                $processedTasks[$task->id] = $initializeWeek();
+            }
+        }
+
+        return $this->json(['progress' => $processedTasks, 'tasks' => $tasksToShow], 'Progress this week');
     }
 
 }
