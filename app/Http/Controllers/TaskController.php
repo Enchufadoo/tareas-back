@@ -221,7 +221,7 @@ class TaskController extends Controller
             }
         }
 
-        $tasksToShow = Task::currentUser()->unfinished()->orWhereIn('id', array_keys($listFinishedTasks))->get();
+        $tasksToShow = Task::currentUser()->unfinished()->orWhereIn('id', array_keys($listFinishedTasks))->without(['user'])->get();
 
         foreach ($tasksToShow as $task) {
             if (!isset($processedTasks[$task->id])) {

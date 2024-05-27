@@ -14,7 +14,7 @@ class LoginResponse
         $baseResponse = new BaseResponse();
         return $baseResponse->json([
             'token' => $token
-        ], 'Login successful wtih ' . $method, $responseStatus);
+        ], 'Login successful with ' . $method, $responseStatus);
     }
 
 }

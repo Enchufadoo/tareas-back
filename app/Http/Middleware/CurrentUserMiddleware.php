@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * Class CurrentUserMiddleware
  *
- * This middleware checks if the belongs to the current logged-in user
+ * This middleware checks if the entity belongs to the current logged-in user
  * It throws an exception if the user is not authorized.
  * If the model is not there it ignores the check, maybe improve or just
  * use authorize from the request
