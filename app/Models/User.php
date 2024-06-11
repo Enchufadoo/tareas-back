@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    const USER_NAME_VALIDATION_RULES = ['string', 'min:8', 'max:20'];
+    const USER_NAME_VALIDATION_RULES = ['string', 'min:8', 'max:50'];
     const USER_USERNAME_VALIDATION_RULES = ['alpha_num', 'min:8', 'max:20'];
 
     const USER_PASSWORD_VALIDATION_RULES = ['string', 'min:8', 'max:20'];

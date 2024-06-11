@@ -14,7 +14,7 @@ class ChangePasswordRequest extends FormRequest
             'old_password' => ['required', 'min:7', 'max:20',
                 function (string $attribute, mixed $value, \Closure $fail) {
                     if (!Hash::check($value, auth()->user()->password)) {
-                        $fail('The old password is incorrect.');
+                        $fail('The current password is incorrect.');
                     }
                 }
             ],

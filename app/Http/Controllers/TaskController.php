@@ -197,7 +197,7 @@ class TaskController extends Controller
         $endOfWeek = Carbon::now()->endOfWeek(Carbon::SATURDAY);
 
         $progress = TaskProgress::with(['task'])
-            ->select(['*', \DB::raw('DAYOFWEEK(created_at) as day_of_week')])
+            ->select(['*', \DB::raw('DAYOFWEEK(created_at) - 1 as day_of_week')])
             ->currentUser()
             ->whereBetween('created_at', [$startOfWeek, $endOfWeek])->get();
 

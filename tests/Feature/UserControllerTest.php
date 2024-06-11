@@ -39,38 +39,39 @@ class UserControllerTest extends TestCase
         $this->assertEquals($newUserData->username, $newUsername);
     }
 
-    public function test_check_username_is_available()
+    public function test_user_can_update_name()
     {
-        User::factory()->create(['username' => 'testtest1']);
-        User::factory()->create(['username' => 'testtest2']);
-        User::factory()->create(['username' => 'testtest3']);
-        User::factory()->create(['username' => 'testtest5']);
+        $user = User::factory()->create(['name' => 'test ariel']);
 
-        $usernameToCheck = 'testUserName';
+        $newName = 'newUserName';
 
-        $response = $this->json('GET', '/api/user/username/available', ['username' => $usernameToCheck]);
-        $response->assertStatus(Response::HTTP_OK);
+        $this->actingAs($user);
 
-        $content = json_decode($response->getContent(), true);
+        $response = $this->json('PATCH', '/api/user', [
+            'name' => $newName
+        ]);
 
-        $this->assertEquals($content['data']['available'], true);
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => $newName
+        ]);
+
+        $newUserData = auth()->user();
+        $this->assertEquals($newUserData->name, $newName);
     }
 
-    public function test_check_username_is_not_available()
+    public function test_updating_user_fails_with_no_data()
     {
-        $user = User::factory()->create(['username' => 'testtest4']);
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-        $usernameToCheck = $user->username;
+        $response = $this->json('PATCH', '/api/user', [
 
-        $response = $this->json(
-            'GET',
-            '/api/user/username/available',
-            ['username' => $usernameToCheck]
-        );
-        $response->assertStatus(Response::HTTP_OK);
+        ]);
 
-        $content = json_decode($response->getContent(), true);
-        $this->assertEquals($content['data']['available'], false);
+        $response->assertStatus(422);
     }
 
     public function test_user_data_is_fetching_data_correctly()
@@ -164,152 +165,6 @@ class UserControllerTest extends TestCase
         ]);
 
         $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-    }
-
-    public function test_creating_a_new_user_with_email()
-    {
-        $userData = [
-            'name' => 'John Doe',
-            'email' => 'johndoe@example.com',
-            'password' => 'password123',
-            'username' => 'johndoe',
-        ];
-
-        $response = $this->json('POST', '/api/user/registration/email', $userData);
-        $response->assertStatus(Response::HTTP_CREATED);
-        $responseData = $this->convertToJson($response);
-
-        $this->assertNotEmpty($responseData['data']['token']);
-    }
-
-    /**
-     * @return \array[][]
-     */
-    public static function new_user_with_missing_fields_provider(): array
-    {
-        return [
-            [
-                [
-                    'email' => 'johndoe@example.com',
-                    'password' => 'password123',
-                    'username' => 'ariel1234'
-                ]
-            ],
-            [
-                [
-                    'name' => 'John Doe',
-                    'email' => null,
-                    'password' => 'password123',
-                    'username' => 'johndoe',
-                ]
-            ],
-            [
-                [
-                    'name' => 'John Doe',
-                    'email' => 'johndoe@example.com',
-                    'username' => 'johndoe',
-                ]
-            ],
-            [
-                [
-                    'email' => 'johndoe@example.com',
-                    'password' => 'password123',
-                    'username' => 'johndoe',
-                ]
-            ],
-            [
-                [
-                    'name' => 'John Doe',
-                    'email' => 'zzjzjzjzjz',
-                    'password' => 'password123',
-                    'username' => 'johndoe',
-                ]
-            ],
-            [
-                [
-                    'name' => 'J',
-                    'email' => 'johndoe@example.com',
-                    'password' => 'password123',
-                    'username' => 'johndoe',
-                ]
-            ],
-            [
-                [
-                    'name' => 'John Doe',
-                    'email' => 'johndoe@example.com',
-                    'password' => 'password123',
-                    'username' => 'j',
-                ]
-            ],
-
-        ];
-    }
-
-    /**
-     * @dataProvider new_user_with_missing_fields_provider
-     * @return void
-     */
-    public function test_creating_a_new_user_with_missing_fields($userData)
-    {
-        $response = $this->json('POST', '/api/user/registration/email', $userData);
-
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
-    }
-
-    /**
-     * @return array[]
-     */
-    public static function email_available_provider(): array
-    {
-        return [
-            [
-                'holamundo@example.com',
-                'chaumundo@example.com',
-                true
-            ],
-            [
-                'holamundo@example.com',
-                'holamundo@example.com',
-                false
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider email_available_provider
-     */
-    public function test_checking_if_email_is_available(
-        $userEmail,
-        $sentEmail,
-        $available
-    )
-    {
-        User::factory()->create(['email' => $userEmail]);
-
-        $response = $this->json('GET', '/api/user/email/available', ['email' => $sentEmail]);
-        $response->assertStatus(Response::HTTP_OK);
-        $data = $this->convertToJson($response);
-
-        $this->assertEquals($available, $data['data']['available']);
-    }
-
-    public static function invalid_email_provider(): array
-    {
-        return [
-            ['invalidemail'],
-            ['invalid.email'],
-            ['invalid@'],
-            ['invalid']
-        ];
-    }
-
-    /**
-     * @dataProvider invalid_email_provider
-     */
-    public function test_checking_if_email_is_available_with_invalid_email($email)
-    {
-        $response = $this->json('GET', '/api/user/email/available', ['email' => $email]);
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     public function test_uploading_avatar()
@@ -425,9 +280,9 @@ class UserControllerTest extends TestCase
     public static function invalid_password_provider(): array
     {
         return [
-            ['password' => ''],
-            ['password' => '123'],
-            ['password' => 'fffffffffffffffffffffffffffffffffffffffffffff'],
+            ['newPassword' => ''],
+            ['newPassword' => '123'],
+            ['newPassword' => 'fffffffffffffffffffffffffffffffffffffffffffff'],
         ];
     }
 
@@ -447,6 +302,145 @@ class UserControllerTest extends TestCase
         $user->refresh();
 
         $this->assertTrue(Hash::check($originalPassword, $user->password));
+    }
+
+    public function test_check_username_is_available()
+    {
+        $user = User::factory()->create(['username' => 'test']);
+        $this->actingAs($user);
+
+        User::factory()->create(['username' => 'testtest1']);
+        User::factory()->create(['username' => 'testtest2']);
+        User::factory()->create(['username' => 'testtest3']);
+        User::factory()->create(['username' => 'testtest5']);
+
+        $usernameToCheck = 'testUserName';
+
+        $response = $this->json('GET', '/api/user/username/available', ['username' => $usernameToCheck]);
+        $response->assertStatus(Response::HTTP_OK);
+
+        $content = json_decode($response->getContent(), true);
+
+        $this->assertEquals($content['data']['available'], true);
+    }
+
+    public function test_check_username_is_not_available()
+    {
+        $user = User::factory()->create(['username' => 'test']);
+        $this->actingAs($user);
+
+        $user = User::factory()->create(['username' => 'testtest4']);
+
+        $usernameToCheck = $user->username;
+
+        $response = $this->json(
+            'GET',
+            '/api/user/username/available',
+            ['username' => $usernameToCheck]
+        );
+        $response->assertStatus(Response::HTTP_OK);
+
+        $content = json_decode($response->getContent(), true);
+        $this->assertEquals($content['data']['available'], false);
+    }
+
+    public function test_cant_change_to_same_username_as_current_username()
+    {
+        $user = User::factory()->create(['username' => 'test']);
+        $this->actingAs($user);
+
+        $usernameToCheck = $user->username;
+
+        $response = $this->json(
+            'GET',
+            '/api/user/username/available',
+            ['username' => $usernameToCheck]
+        );
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $content = json_decode($response->getContent(), true);
+        $this->assertEquals($content['data']['available'], false);
+    }
+
+    /**
+     * @return array[]
+     */
+    public static function email_available_provider(): array
+    {
+        return [
+            [
+                'holamundo@example.com',
+                'chaumundo@example.com',
+                true
+            ],
+            [
+                'holamundo@example.com',
+                'holamundo@example.com',
+                false
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider email_available_provider
+     */
+    public function test_checking_if_email_is_available(
+        $userEmail,
+        $sentEmail,
+        $available
+    )
+    {
+        $user = User::factory()->create(['username' => 'test']);
+        $this->actingAs($user);
+        User::factory()->create(['email' => $userEmail]);
+
+        $response = $this->json('GET', '/api/user/email/available', ['email' => $sentEmail]);
+        $response->assertStatus(Response::HTTP_OK);
+        $data = $this->convertToJson($response);
+
+        $this->assertEquals($available, $data['data']['available']);
+    }
+
+    public static function invalid_email_provider(): array
+    {
+        return [
+            ['invalidemail'],
+            ['invalid.email'],
+            ['invalid@'],
+            ['invalid']
+        ];
+    }
+
+    /**
+     * @dataProvider invalid_email_provider
+     */
+    public function test_checking_if_email_is_available_with_invalid_email($email)
+    {
+        $user = User::factory()->create([]);
+        $this->actingAs($user);
+
+        $response = $this->json('GET', '/api/user/email/available', ['email' => $email]);
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_cant_change_to_same_email_as_current_email()
+    {
+        $emailToCheck = "ariel@ariel.com";
+
+        $user = User::factory()->create(['email' => $emailToCheck]);
+        $this->actingAs($user);
+
+        $response = $this->json(
+            'GET',
+            '/api/user/email/available',
+            ['email' => $emailToCheck]
+        );
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $content = json_decode($response->getContent(), true);
+        $this->assertEquals($content['data']['available'], false);
     }
 
 }

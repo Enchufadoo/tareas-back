@@ -9,12 +9,24 @@ class UpdateUserRequest extends FormRequest
 {
     public function rules()
     {
-        $rules = [
+        return [
             'name' => [...User::USER_NAME_VALIDATION_RULES, 'sometimes'],
             'username' => [...User::USER_USERNAME_VALIDATION_RULES, 'sometimes'],
             'avatar' => 'sometimes|mimes:jpg,jpeg,png|max:2048'
         ];
-
-        return $rules;
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            foreach (array_keys($validator->getRules()) as $field) {
+                if (isset($validator->getData()[$field])) {
+                    return;
+                }
+            }
+
+            $validator->errors()->add('all', 'At least one field is required.');
+        });
+    }
+
 }
